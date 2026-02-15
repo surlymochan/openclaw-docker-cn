@@ -15,41 +15,45 @@
 
 ### 1. Prerequisites
 *   A Linux server with Docker & SSH installed.
-*   Local machine (Mac/Linux) with `rsync`.
+*   Local machine (Mac/Linux) with `rsync` and `git`.
 
-### 2. Deploy
-Run the script locally, passing the server IP and username (default: root):
+### 2. Deploy (Community Version)
+Run the script locally, passing the server IP:
 
 ```bash
-./deploy-openclaw.sh <SERVER_IP> [USER]
+./deploy-openclaw.sh <SERVER_IP>
 # Example: ./deploy-openclaw.sh 1.2.3.4
 ```
 
 The script will automatically:
-1.  Fetch the latest OpenClaw source code.
+1.  Fetch the latest OpenClaw source code from GitHub.
 2.  Inject the custom Dockerfile.
 3.  Sync build context to the server.
 4.  Build and Start OpenClaw Gateway & Caddy.
 
-### 3. Access & Pair
+### 3. Deploy with Local Source (Optional)
+If you need to use local source code for development/debugging:
+
+```bash
+./deploy-openclaw.sh <SERVER_IP> <LOCAL_SOURCE_PATH>
+# Example: ./deploy-openclaw.sh 1.2.3.4 /path/to/openclaw
+```
+
+### 4. Access & Pair
 After successful deployment, the script outputs the URL.
 
 1.  Open your browser: `https://<SERVER_IP>.nip.io:18443`
     *   *Note: Accept the self-signed certificate warning.*
-2.  If you see **"Pairing Required"**:
-    *   **Keep the browser tab open**.
-    *   Run this locally:
-        ```bash
-        ./approve-device.sh <SERVER_IP>
-        ```
-    *   It will auto-approve your connection request.
-3.  The page will refresh and connect.
+2.  If you see **"Pairing Required"** or need to enter Token:
+    *   Check the Token on server: `ssh root@<IP> "cat /data/openclaw-deploy/.env | grep TOKEN"`
+    *   Go to Overview page in Web UI and enter the Token
+3.  Click Connect and you're good to go!
 
 ## Operations
 
 **Enter Container Console**:
 ```bash
-ssh root@<IP> "docker exec -it openclaw-src-openclaw-gateway-1 /bin/bash"
+ssh root@<IP> "docker exec -it openclaw-deploy-openclaw-gateway-1 /bin/bash"
 # Inside container:
 openclaw status
 openclaw devices list
@@ -57,7 +61,12 @@ openclaw devices list
 
 **View Logs**:
 ```bash
-ssh root@<IP> "docker logs openclaw-src-openclaw-gateway-1 -f --tail 100"
+ssh root@<IP> "docker logs openclaw-deploy-openclaw-gateway-1 -f --tail 100"
+```
+
+**Check Token**:
+```bash
+ssh root@<IP> "cat /data/openclaw-deploy/.env | grep TOKEN"
 ```
 
 ## Files
@@ -68,4 +77,4 @@ ssh root@<IP> "docker logs openclaw-src-openclaw-gateway-1 -f --tail 100"
 *   `Caddyfile`: Reverse proxy config (Origin Spoofing).
 
 ## Disclaimer
-This project is a community deployment tool and is not affiliated with OpenClaw. Source code belongs to OpenClaw.
+This project is a community deployment tool and is not affiliated with OpenClaw.
