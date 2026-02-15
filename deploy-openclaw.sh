@@ -8,10 +8,21 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+
 KEYS_FILE="../../private/keys/openclaw-docker-cn/deploy.env"
 if [ -f "$KEYS_FILE" ]; then
     set -a
     source "$KEYS_FILE"
+    set +a
+fi
+
+LLM_KEYS_FILE="../../private/keys/openclaw-docker-cn/llm.env"
+if [ -f "$LLM_KEYS_FILE" ]; then
+    set -a
+    source "$LLM_KEYS_FILE"
     set +a
 fi
 
@@ -63,59 +74,116 @@ rsync -avz --exclude '.git' --delete "$TEMP_SRC/" "$SERVER_USER@$SERVER_IP:$REMO
 rsync -avz docker-compose.yml Caddyfile "$SERVER_USER@$SERVER_IP:$REMOTE_DIR/"
 
 echo -e "${BLUE}🐳 远程构建并启动...${NC}"
-ssh "$SERVER_USER@$SERVER_IP" << EOF
+ssh "$SERVER_USER@$SERVER_IP" << 'EOF'
     set -e
     cd $REMOTE_DIR
     export SERVER_IP=$SERVER_IP
     
     EXISTING_TOKEN=""
     if [ -f "$CONFIG_DIR/openclaw.json" ]; then
-        EXISTING_TOKEN=\$(cat "$CONFIG_DIR/openclaw.json" | grep -o '"token": "[^"]*"' | cut -d'"' -f4 2>/dev/null || echo '')
-        if [ -n "\$EXISTING_TOKEN" ]; then
+        EXISTING_TOKEN=$(cat "$CONFIG_DIR/openclaw.json" 2>/dev/null | grep -o '"token": "[^"]*"' | head -1 | cut -d'"' -f4 || echo '')
+        if [ -n "$EXISTING_TOKEN" ]; then
             echo "检测到现有配置，复用 Token"
         fi
     fi
     
     if [ -f .env ]; then
-        if [ -z "\$EXISTING_TOKEN" ]; then
-            EXISTING_TOKEN=\$(grep "OPENCLAW_GATEWAY_TOKEN=" .env | cut -d'=' -f2)
+        if [ -z "$EXISTING_TOKEN" ]; then
+            EXISTING_TOKEN=$(grep "OPENCLAW_GATEWAY_TOKEN=" .env | cut -d'=' -f2)
         fi
     else
-        if [ -z "\$EXISTING_TOKEN" ]; then
-            TOKEN=\$(openssl rand -hex 16)
+        if [ -z "$EXISTING_TOKEN" ]; then
+            TOKEN=$(openssl rand -hex 16)
         else
-            TOKEN="\$EXISTING_TOKEN"
+            TOKEN="$EXISTING_TOKEN"
         fi
         
         cat > .env << EENV
 OPENCLAW_IMAGE=openclaw:local
-OPENCLAW_GATEWAY_TOKEN=\$TOKEN
+OPENCLAW_GATEWAY_TOKEN=$TOKEN
 OPENCLAW_CONFIG_DIR=$CONFIG_DIR
 OPENCLAW_WORKSPACE_DIR=$WORKSPACE_DIR
 OPENCLAW_GATEWAY_PORT=18789
 OPENCLAW_BRIDGE_PORT=18790
-OPENCLAW_GATEWAY_BIND=0.0.0.0
+OPENCLAW_GATEWAY_BIND=lan
 OPENCLAW_GATEWAY_TRUSTED_PROXIES="0.0.0.0/0"
-TRUSTED_PROXIES="0.0.0.0/0"
-CLAUDE_AI_SESSION_KEY=""
 SERVER_IP=$SERVER_IP
 EENV
     fi
     
-    if [ -n "\$EXISTING_TOKEN" ]; then
+    if [ -n "$EXISTING_TOKEN" ]; then
         if grep -q "OPENCLAW_GATEWAY_TOKEN=" .env; then
-            sed -i "s/^OPENCLAW_GATEWAY_TOKEN=.*/OPENCLAW_GATEWAY_TOKEN=\$EXISTING_TOKEN/" .env
+            sed -i "s/OPENCLAW_GATEWAY_TOKEN=.*/OPENCLAW_GATEWAY_TOKEN=$EXISTING_TOKEN/" .env
         fi
     fi
     
     if grep -q "SERVER_IP=" .env; then
-        sed -i "s/^SERVER_IP=.*/SERVER_IP=$SERVER_IP/" .env
+        sed -i "s/SERVER_IP=.*/SERVER_IP=$SERVER_IP/" .env
     else
         echo "SERVER_IP=$SERVER_IP" >> .env
     fi
     
-    CURRENT_TOKEN=\$(grep "OPENCLAW_GATEWAY_TOKEN=" .env | cut -d'=' -f2)
-    echo "Token: \$CURRENT_TOKEN"
+    CURRENT_TOKEN=$(grep "OPENCLAW_GATEWAY_TOKEN=" .env | cut -d'=' -f2)
+    echo "Token: $CURRENT_TOKEN"
+    
+    # 生成 openclaw.json 配置（qwen3-max 模型）
+    BAILIAN_API_KEY_PARAM="${BAILIAN_API_KEY:-}"
+    if [ -n "$BAILIAN_API_KEY_PARAM" ]; then
+        cat > "$CONFIG_DIR/openclaw.json" << GCONFIG
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.13",
+    "lastTouchedAt": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "bailian": {
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "apiKey": "$BAILIAN_API_KEY_PARAM",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "qwen3-max",
+            "name": "Qwen3 Max",
+            "contextWindow": 80000,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "bailian/qwen3-max"
+      },
+      "models": {
+        "bailian/qwen3-max": {}
+      },
+      "workspace": "/home/node/.openclaw/workspace"
+    }
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto"
+  },
+  "gateway": {
+    "port": 18789,
+    "controlUi": {
+      "allowInsecureAuth": true
+    },
+    "trustedProxies": [
+      "0.0.0.0/0"
+    ]
+  }
+}
+GCONFIG
+        echo "已生成 openclaw.json 配置（qwen3-max）"
+    fi
+    
+    # 修复权限
+    chown -R 1000:1000 "$CONFIG_DIR" 2>/dev/null || true
     
     cd context
     docker build -t openclaw:local .
