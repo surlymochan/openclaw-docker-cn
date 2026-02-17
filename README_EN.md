@@ -1,10 +1,12 @@
 # OpenClaw Docker CN
 
-One command to deploy OpenClaw.
+One command to deploy OpenClaw, an out-of-the-box AI assistant platform.
 
 ```bash
 ./deploy-openclaw.sh <YOUR_SERVER_IP>
 ```
+
+[中文版 / Chinese Version](README.md)
 
 ---
 
@@ -12,30 +14,47 @@ One command to deploy OpenClaw.
 
 | Feature | Description |
 |---------|-------------|
-| 🚀 **One-Click** | Clone and run, no manual config |
-| 🔥 **Out of Box** | Built-in qwen3-max model |
-| 🇨🇳 **CN Optimized** | NPM mirror, network issues solved |
-| 🔒 **HTTPS Direct** | Caddy proxy, no SSH tunnel needed |
+| 🚀 **One-Click Deployment** | Complete deployment with a single command, no manual configuration |
+| 🔥 **qwen3-max Model** | Built-in Qwen3 Max model (80k context window) |
+| 🇨🇳 **China Optimized** | NPM mirror acceleration, solves network issues |
+| 🔒 **HTTPS Direct Access** | Caddy auto HTTPS, no SSH tunnel required |
+| 🔍 **Composite Search** | Baidu AI intelligent search + Gaode Maps POI search |
+| 🛠️ **Built-in Tools** | Native commands and skills system, ready to use |
+| 💾 **Persistent Workspace** | Automatically saves conversation history and files |
+| 🌐 **Web Access** | Direct browser access, no local installation required |
 
 ---
 
 ## One-Click Start
 
 ```bash
-# 1. Clone
-git clone https://github.com/surlymochan/openclaw-docker-cn.git
-cd openclaw-docker-cn
-
-# 2. Deploy
-./deploy-openclaw.sh
+# Deploy OpenClaw
+./deploy-openclaw.sh <YOUR_SERVER_IP>
 ```
 
 Done automatically:
-- Fetch source → Build image → Start services → Configure model
+- Fetch OpenClaw source → Build Docker image → Start services
+- Configure qwen3-max model → Enable composite search plugin
+- Setup HTTPS reverse proxy → Generate secure token
 
-Visit `https://<IP>.nip.io:18443`, you're in.
+Visit `https://<IP>.nip.io:18443` and start using!
 
 ---
+
+## AI Capabilities
+
+### 🧠 qwen3-max Model
+- **Ultra-long Context**: 80,000 tokens context window
+- **Large Output**: Up to 8,192 tokens output
+- **Native Support**: Built-in command system and skills framework
+- **Persistent Workspace**: Automatically saves conversation history and generated files
+
+### 🔍 Composite Search Features
+- **Modular Architecture**: Extensible plugin design supporting multiple search tools
+- **Baidu AI Search**: General Chinese search with AI intelligent summarization
+- **Gaode Maps Search**: POI, addresses, routes, and travel information
+- **Smart Routing**: Automatically selects the best search engine based on query content
+- **Built-in Search Disabled**: Avoids duplicate functionality and token waste
 
 ## FAQ
 
@@ -60,7 +79,7 @@ ssh root@<IP> "docker logs openclaw-deploy-openclaw-gateway-1 -f"
 
 ### Enable LLM
 
-Create `../../private/keys/openclaw-docker-cn/llm.env`:
+Create `llm.env` in the project root directory:
 
 ```bash
 BAILIAN_API_KEY=your-key
@@ -76,11 +95,15 @@ Re-run deploy.
 
 ---
 
-## Default Config
+## Default Configuration
 
-- Model: qwen3-max (80k context)
-- Port: 18443 (HTTPS)
-- Gateway: 18789
+- **AI Model**: qwen3-max (80k context, 8192 output)
+- **Web Access**: HTTPS port 18443 (Caddy auto certificate)
+- **Gateway**: Port 18789 (internal communication)
+- **Search Function**: Composite search plugin (Baidu AI + Gaode Maps)
+- **Workspace**: Persistent storage (`/root/.openclaw/workspace`)
+- **Command System**: Native commands and skills automatically enabled
+- **Security**: Built-in token authentication, HTTPS encryption
 
 ---
 

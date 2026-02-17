@@ -6,6 +6,8 @@
 ./deploy-openclaw.sh <你的服务器IP>
 ```
 
+[English Version](README_EN.md)
+
 ---
 
 ## 核心特性
