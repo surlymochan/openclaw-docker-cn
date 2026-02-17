@@ -16,6 +16,7 @@
 | 🔥 **开箱即用** | 内置 qwen3-max 模型配置 |
 | 🇨🇳 **国内友好** | NPM 镜像，解决网络问题 |
 | 🔒 **HTTPS 直连** | Caddy 反向代理，无需 SSH 隧道 |
+| 🔍 **复合搜索** | 百度 AI 搜索 + 高德地图搜索 |
 
 ---
 
@@ -31,9 +32,36 @@ cd openclaw-docker-cn
 ```
 
 脚本自动完成：
-- 拉取源码 → 构建镜像 → 启动服务 → 配置模型
+- 拉取源码 → 构建镜像 → 启动服务 → 配置模型 → 配置复合搜索插件
 
 访问 `https://<IP>.nip.io:18443`，搞定。
+
+---
+
+## 复合搜索功能
+
+### 功能特点
+- **百度 AI 搜索**: 通用中文搜索，AI 智能总结
+- **高德地图搜索**: POI、地址、路线、出行信息
+- **智能路由**: 自动根据查询内容选择最佳搜索引擎
+- **禁用内置搜索**: 避免重复功能和 token 浪费
+
+### 使用方法
+在 OpenClaw Chat 中使用：
+```
+/search 杭州西湖
+/search 人工智能最新发展  
+/search 北京三里屯美食推荐
+```
+
+### 配置搜索 API Keys
+创建 `../../private/keys/openclaw-docker-cn/search.env`：
+```bash
+GAODE_API_KEY=your-gaode-key
+BAIDU_API_KEY=your-baidu-api-key
+```
+
+重新部署即可启用搜索功能。
 
 ---
 
@@ -81,6 +109,7 @@ BAILIAN_API_KEY=your-key
 - 模型：qwen3-max (80k context)
 - 端口：18443 (HTTPS)
 - Gateway：18789
+- 搜索：复合搜索插件 (百度 + 高德)
 
 ---
 
