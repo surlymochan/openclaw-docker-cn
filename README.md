@@ -1,6 +1,6 @@
 # OpenClaw Docker CN
 
-一行命令部署 OpenClaw。
+一行命令部署 OpenClaw，支持复合搜索插件（高德地图 + 百度AI搜索）。
 
 ```bash
 ./deploy-openclaw.sh <你的服务器IP>
@@ -23,12 +23,8 @@
 ## 一步启动
 
 ```bash
-# 1. 克隆
-git clone https://github.com/surlymochan/openclaw-docker-cn.git
-cd openclaw-docker-cn
-
-# 2. 部署
-./deploy-openclaw.sh
+# 部署 OpenClaw
+./deploy-openclaw.sh <你的服务器IP>
 ```
 
 脚本自动完成：
