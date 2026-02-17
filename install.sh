@@ -38,7 +38,7 @@ error() {
 }
 
 # Load private config if exists
-KEYS_FILE="../../private/keys/openclaw-docker-cn/deploy.env"
+KEYS_FILE="../../private/keys/openclaw-cn/deploy.env"
 if [ -f "$KEYS_FILE" ]; then
     set -a
     source "$KEYS_FILE"

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 0. 加载私有配置
-KEYS_FILE="../../private/keys/openclaw-docker-cn/deploy.env"
+KEYS_FILE="../../private/keys/openclaw-cn/deploy.env"
 if [ -f "$KEYS_FILE" ]; then
     source "$KEYS_FILE"
 fi
