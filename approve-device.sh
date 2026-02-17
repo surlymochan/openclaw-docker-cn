@@ -1,12 +1,11 @@
 #!/bin/bash
 
-# 0. 加载私有配置
-KEYS_FILE="../../private/keys/openclaw-cn/deploy.env"
-if [ -f "$KEYS_FILE" ]; then
-    source "$KEYS_FILE"
+# 部署入参：SERVER_IP 通过参数或环境变量传入；可选通过 OPENCLAW_DEPLOY_ENV 指向 deploy.env 加载（文件由调用方自行管理，不随仓库提供）
+if [ -n "${OPENCLAW_DEPLOY_ENV:-}" ] && [ -f "$OPENCLAW_DEPLOY_ENV" ]; then
+    source "$OPENCLAW_DEPLOY_ENV"
 fi
 
-SERVER_IP="${1:-$SERVER_IP}"
+SERVER_IP="${1:-${SERVER_IP:-}}"
 CONTAINER="openclaw-deploy-openclaw-gateway-1"
 
 # 检查参数 (如果 Env 也没加载到)

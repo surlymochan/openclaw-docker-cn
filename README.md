@@ -25,9 +25,14 @@
 ## 一步启动
 
 ```bash
-# 部署 OpenClaw
+# 部署 OpenClaw（SERVER_IP 必填，可由参数或环境变量传入）
 ./deploy-openclaw-cn.sh <你的服务器IP>
 ```
+
+**部署入参（公共入参，不依赖仓库外路径）**：
+- **SERVER_IP**：必填，目标服务器 IP（命令行第 1 参数或环境变量 `SERVER_IP`）。
+- **SERVER_USER**：可选，SSH 用户名，默认 `root`（环境变量或部分脚本第 2 参数）。
+- **OPENCLAW_DEPLOY_ENV**：可选，指向 `deploy.env` 的路径，用于一次性加载 SERVER_IP、SERVER_USER 等；文件由使用方自行管理，仓库不包含。
 
 脚本自动完成：
 - 拉取 OpenClaw 源码 → 构建 Docker 镜像 → 启动服务

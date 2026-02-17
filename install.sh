@@ -37,11 +37,10 @@ error() {
     exit 1
 }
 
-# Load private config if exists
-KEYS_FILE="../../private/keys/openclaw-cn/deploy.env"
-if [ -f "$KEYS_FILE" ]; then
+# 部署入参：SERVER_IP、SERVER_USER 通过参数或环境变量传入；可选通过 OPENCLAW_DEPLOY_ENV 指向 deploy.env 加载（文件由调用方自行管理，不随仓库提供）
+if [ -n "${OPENCLAW_DEPLOY_ENV:-}" ] && [ -f "$OPENCLAW_DEPLOY_ENV" ]; then
     set -a
-    source "$KEYS_FILE"
+    source "$OPENCLAW_DEPLOY_ENV"
     set +a
 fi
 
