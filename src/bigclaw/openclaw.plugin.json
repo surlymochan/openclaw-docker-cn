@@ -1,7 +1,7 @@
 {
   "id": "bigclaw",
   "name": "BigClaw Search",
-  "description": "复合搜索工具 - 高德地图 + 百度AI搜索",
+  "description": "复合搜索 - 百度、高德等",
   "kind": "tools",
   "version": "1.0.0",
   "configSchema": {

@@ -32,24 +32,23 @@ RUN pnpm ui:build
 
 ENV NODE_ENV=production
 
-# Install Ops Tools
-RUN apt-get update && apt-get install -y vim curl wget procps net-tools iputils-ping jq less && rm -rf /var/lib/apt/lists/*
+# Install Ops Tools and gettext (for envsubst) and gosu
+RUN apt-get update && apt-get install -y vim curl wget procps net-tools iputils-ping jq less gettext-base gosu && rm -rf /var/lib/apt/lists/*
 
 # Add OpenClaw CLI Wrapper
 RUN echo '#!/bin/sh\nexec node /app/dist/index.js "$@"' > /usr/local/bin/openclaw && chmod +x /usr/local/bin/openclaw
 
+# Copy MCP Server
+COPY search-mcp /app/search-mcp
+RUN cd /app/search-mcp && npm install --production
+
+# Copy Config Template and Entrypoint
+COPY openclaw.template.json /app/
+COPY entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+
 # Allow non-root user to write temp files during runtime/tests.
 RUN chown -R node:node /app
 
-# Security hardening: Run as non-root user
-# The node:22-bookworm image includes a 'node' user (uid 1000)
-# This reduces the attack surface by preventing container escape via root privileges
-USER node
-
 # Start gateway server with default config.
-# Binds to loopback (127.0.0.1) by default for security.
-#
-# For container platforms requiring external health checks:
-#   1. Set OPENCLAW_GATEWAY_TOKEN or OPENCLAW_GATEWAY_PASSWORD env var
-#   2. Override CMD: ["node","openclaw.mjs","gateway","--allow-unconfigured","--bind","lan"]
-CMD ["node", "openclaw.mjs", "gateway", "--allow-unconfigured"]
+ENTRYPOINT ["/entrypoint.sh"]

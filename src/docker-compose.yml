@@ -1,49 +1,31 @@
+# 正式目录配置：已合并 SP0216 + SP0217 (bigclaw) + SP0218 (飞书 + Skills)
+# 部署时由迭代脚本或根目录部署逻辑使用；服务器 .env 需含 OPENCLAW_GATEWAY_TOKEN、GAODE_API_KEY、BAIDU_API_KEY、FEISHU_* 等
 services:
   openclaw-gateway:
     image: ${OPENCLAW_IMAGE:-openclaw:local}
     environment:
       TZ: Asia/Shanghai
       HOME: /home/node
-      TERM: xterm-256color
       OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
       OPENCLAW_GATEWAY_TRUSTED_PROXIES: "0.0.0.0/0"
-      CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
-      CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
-      CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
-      BAILIAN_API_KEY: ${BAILIAN_API_KEY}
-      GAODE_API_KEY: ${GAODE_API_KEY}
-      BAIDU_API_KEY: ${BAIDU_API_KEY}
+      GAODE_API_KEY: ${GAODE_API_KEY:-}
+      BAIDU_API_KEY: ${BAIDU_API_KEY:-}
     volumes:
       - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
-      - ./plugins:/app/plugins
+      - /data/bigclaw:/app/bigclaw
     ports:
       - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
       - "${OPENCLAW_BRIDGE_PORT:-18790}:18790"
     init: true
     restart: unless-stopped
-    command:
-      [
-        "node",
-        "dist/index.js",
-        "gateway",
-        "--allow-unconfigured",
-        "--bind",
-        "${OPENCLAW_GATEWAY_BIND:-lan}",
-        "--port",
-        "18789"
-      ]
+    command: ["node", "dist/index.js", "gateway", "--allow-unconfigured", "--bind", "lan", "--port", "18789"]
 
   openclaw-cli:
     image: ${OPENCLAW_IMAGE:-openclaw:local}
     environment:
       TZ: Asia/Shanghai
       HOME: /home/node
-      TERM: xterm-256color
       OPENCLAW_GATEWAY_TOKEN: ${OPENCLAW_GATEWAY_TOKEN}
-      BROWSER: echo
-      CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
-      CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
-      CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
     volumes:
       - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
     stdin_open: true

@@ -1,122 +1,57 @@
-# OpenClaw CN
+# OpenClaw 基础工具链（私有项目）
 
-一行命令部署 OpenClaw，支持复合搜索插件（高德地图 + 百度AI搜索）。
-
-```bash
-./deploy-openclaw-cn.sh <你的服务器IP>
-```
-
-[English Version](README_EN.md)
+本仓库采用 **iteration（迭代开发）+ src（最终项目文件）+ spec（最终说明报告）** 结构。项目级工作流与专属规则见 **[aispec.md](../../aispec.md)**（工作区根目录）。通用工作流/结构变更汇总见 **private/aispec-private**（[README](../aispec-private/README.md)、[CHANGELOG](../aispec-private/CHANGELOG.md)）。
 
 ---
 
-## 核心特性
+## 目录结构
 
-| 特性 | 说明 |
+```
+openclaw-cn-private/
+├── deploy.sh              # 统一部署入口（菜单与命令行）
+├── scripts/
+│   └── deploy-from-src.sh # 全部部署：仅从 src+spec 发布，供 deploy all 调用
+├── iteration/             # 迭代开发（各 SP 的 MRD/PRD/DESIGN/deploy/README）
+│   ├── SP0216/
+│   ├── SP0217/
+│   ├── SP0218/
+│   ├── SP0219/             # 迭代编号调整（SP0220→SP0218）；通用变更见 private/aispec-private
+│   └── SP0221/
+├── src/                   # 最终项目文件（合并后的代码与配置）
+│   ├── bigclaw/           # 插件，同步到服务器 /data/bigclaw
+│   ├── docker-compose.yml
+│   ├── openclaw.template.json
+│   ├── Caddyfile
+│   └── Dockerfile
+├── spec/                  # 最终说明报告（MRD、PRD、DESIGN、TEST、REVIEW、README）
+│   ├── README.md          # 版本号与总览（当前发布版本见此处）
+│   ├── MRD.md
+│   ├── PRD.md
+│   ├── DESIGN.md
+│   ├── TEST.md
+│   └── REVIEW.md
+└── README.md              # 本文件：结构索引
+```
+
+---
+
+## 部署
+
+| 命令 | 说明 |
 |------|------|
-| 🚀 **一键部署** | 单命令完成完整部署，无需手动配置 |
-| 🔥 **qwen3-max 模型** | 内置通义千问 Qwen3 Max 模型（80k 上下文）|
-| 🇨🇳 **国内优化** | NPM 镜像加速，解决网络问题 |
-| 🔒 **公网 HTTPS** | Caddy 自动 HTTPS，支持公网 Web 访问 |
-| 🔍 **复合搜索** | 百度 AI 智能搜索 + 高德地图 POI 搜索 |
+| `./deploy.sh all` | **全部部署**：从 **src+spec** 发布版本部署（见 spec/README.md 版本号），不跑迭代脚本 |
+| `./deploy.sh sp0216` | 仅部署 SP0216（模型） |
+| `./deploy.sh sp0217` | 仅部署 SP0217（bigclaw），优先用 src/bigclaw |
+| `./deploy.sh sp0218` | 仅部署 SP0218（飞书+Skills），优先用 src/bigclaw |
+| `./deploy.sh sp0221` | 当前同 SP0218；SP0221 合并后即生效 |
+
+**密钥**：从 `private/keys/openclaw-cn-private/` 读取（llm.env、feishu.env、search.env），见 [spec/README.md](spec/README.md)。
 
 ---
 
-## 一步启动
+## 合并约定
 
-```bash
-# 部署 OpenClaw（SERVER_IP 必填，可由参数或环境变量传入）
-./deploy-openclaw-cn.sh <你的服务器IP>
-```
+- 迭代验证通过后，将产出**合并到 src/**（代码、docker-compose、openclaw.template 等）并**同步更新 spec/**（PRD、DESIGN、TEST 等；README 中更新版本号）。
+- **deploy all** 始终指向 **src+spec** 中已合并的最新版本。
 
-**部署入参（公共入参，不依赖仓库外路径）**：
-- **SERVER_IP**：必填，目标服务器 IP（命令行第 1 参数或环境变量 `SERVER_IP`）。
-- **SERVER_USER**：可选，SSH 用户名，默认 `root`（环境变量或部分脚本第 2 参数）。
-- **OPENCLAW_DEPLOY_ENV**：可选，指向 `deploy.env` 的路径，用于一次性加载 SERVER_IP、SERVER_USER 等；文件由使用方自行管理，仓库不包含。
-
-脚本自动完成：
-- 拉取 OpenClaw 源码 → 构建 Docker 镜像 → 启动服务
-- 配置 qwen3-max 模型 → 启用复合搜索插件
-- 设置 HTTPS 反向代理 → 生成安全 Token
-
-访问 `https://<IP>.nip.io:18443`，开始使用！
-
----
-
-## 复合搜索功能
-
-### 功能特点
-- **百度 AI 搜索**: 通用中文搜索，AI 智能总结
-- **高德地图搜索**: POI、地址、路线、出行信息
-- **智能路由**: 自动根据查询内容选择最佳搜索引擎
-- **禁用内置搜索**: 避免重复功能和 token 浪费
-
-### 使用方法
-在 OpenClaw Chat 中使用：
-```
-/search 杭州西湖
-/search 人工智能最新发展  
-/search 北京三里屯美食推荐
-```
-
-### 配置搜索 API Keys
-在项目根目录下创建 `search.env` 文件：
-```bash
-GAODE_API_KEY=your-gaode-key
-BAIDU_API_KEY=your-baidu-api-key
-```
-
-然后重新部署即可启用搜索功能。
-
----
-
-## 常见问题
-
-**Token 在哪？**
-```bash
-ssh root@<IP> "cat /data/openclaw-deploy/.env | grep TOKEN"
-```
-
-**怎么重启？**
-```bash
-ssh root@<IP> "cd /data/openclaw-deploy && docker compose restart"
-```
-
-**怎么看日志？**
-```bash
-ssh root@<IP> "docker logs openclaw-deploy-openclaw-gateway-1 -f"
-```
-
----
-
-## 进阶配置
-
-### 启用模型对话
-
-在项目根目录下创建 `llm.env` 文件：
-
-```bash
-BAILIAN_API_KEY=your-key
-```
-
-重新部署。
-
-### 本地源码调试
-
-```bash
-./deploy-openclaw.sh <IP> /path/to/openclaw
-```
-
----
-
-## 默认配置
-
-- **AI 模型**: qwen3-max (80k 上下文，8192 输出)
-- **公网访问**: HTTPS 18443 端口 (Caddy 自动证书)
-- **搜索功能**: 复合搜索插件 (百度 AI + 高德地图)
-
----
-
-## 声明
-
-社区工具，与 OpenClaw 官方无关。
+详细流程与文档责任人见 [aispec.md](../../aispec.md) 与 [CONVENTIONS](../../private/aispec-private/spec/CONVENTIONS.md)；完整说明与版本见 **[spec/README.md](spec/README.md)**。

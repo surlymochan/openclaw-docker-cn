@@ -1,0 +1,61 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.13",
+    "lastTouchedAt": "${LAST_TOUCHED_AT}"
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "bailian": {
+        "baseUrl": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "apiKey": "${BAILIAN_API_KEY}",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "qwen3-max",
+            "name": "Qwen3 Max",
+            "contextWindow": 80000,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": { "primary": "bailian/qwen3-max" },
+      "models": { "bailian/qwen3-max": {} },
+      "workspace": "/home/node/.openclaw/workspace"
+    }
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto"
+  },
+  "tools": {
+    "deny": ["web_search"],
+    "allow": ["composite_search"]
+  },
+  "plugins": {
+    "enabled": true,
+    "load": { "paths": ["/app/bigclaw"] },
+    "entries": { "bigclaw": { "enabled": true } }
+  },
+  "channels": {
+    "feishu": {
+      "enabled": true,
+      "appId": "${FEISHU_APP_ID}",
+      "appSecret": "${FEISHU_APP_SECRET}",
+      "encryptKey": "${FEISHU_ENCRYPT_KEY}",
+      "verificationToken": "${FEISHU_VERIFICATION_TOKEN}",
+      "webhookPath": "/webhooks/feishu",
+      "dmPolicy": "open",
+      "allowFrom": ["*"]
+    }
+  },
+  "gateway": {
+    "port": 18789,
+    "controlUi": { "allowInsecureAuth": true },
+    "trustedProxies": ["0.0.0.0/0"]
+  }
+}
