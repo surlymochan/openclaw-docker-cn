@@ -1,52 +1,39 @@
-# OpenClaw 基础工具链（私有项目）— 规格与说明
+# OpenClaw 国内版 — 规格与说明
 
-**当前发布版本**：`v2026.2.19`（对应 iteration 合并到 src+spec 后的发布版本）
+**当前发布版本**：`v2026.2.19`
 
-**版本说明**：迭代完成后将结果合并到 `src/`（代码与配置）与 `spec/`（本目录，说明与报告）；`deploy all` 部署的即此版本。
+**版本说明**：本仓库为发布版，部署使用 **src/**（代码与配置）与 **spec/**（本目录）；`./deploy.sh all` 部署的即此版本。
 
 ---
 
 ## 项目概述
 
-本项目通过多个迭代（SP）为 OpenClaw 添加必备工具链能力：大模型接入、飞书机器人、bigclaw 插件（composite-search）、关键 Skills。
-
-**项目级工作流与公约**：见工作区根目录 [aispec.md](../../aispec.md)。整体进展见同一文件第三节 PROGRESS。
+本仓库为 OpenClaw 国内一键部署版，包含：大模型（阿里百炼 qwen3-max）、复合搜索（百度+高德）、飞书机器人、bigclaw 插件、关键 Skills。部署时默认先备份 Agent workspace、再拉起服务、最后恢复 workspace。
 
 ## 密钥与配置
 
-密钥从 `private/keys/openclaw-cn-private/` 读取：
+密钥通过以下方式之一提供（部署脚本会注入到服务器）：
 
-- `llm.env` — 阿里云百炼 API Key  
-- `feishu.env` — 飞书机器人  
-- `search.env` — 百度/高德搜索 API Key  
+- **环境变量**：`BAILIAN_API_KEY`、`FEISHU_APP_ID` / `FEISHU_APP_SECRET` 等，或
+- **KEYS_DIR**：指向包含 `llm.env`、`feishu.env`、`search.env` 的目录（脚本内通过 `KEYS_DIR` 环境变量或相对路径读取）。
 
-## 迭代与合并
+各文件用途：`llm.env` 阿里云百炼；`feishu.env` 飞书机器人；`search.env` 百度/高德搜索 API Key。
 
-| 迭代 | 说明 | 状态 |
-|------|------|------|
-| SP0216 | Qwen3-Max 模型接入 | ✅ 已合并 |
-| SP0217 | bigclaw（composite-search） | ✅ 已合并 |
-| SP0218 | 飞书 + Skills | ✅ 已合并 |
-| SP0219 | 编号调整（SP0220→SP0218）+ 百度搜索接口更换（web_search） | ✅ 已合并 |
-| SP0221 | 实时股市信息搜索 | 🚧 规划中 |
-| SP0222 | 部署时 workspace 备份与恢复 | ✅ 已合并 |
+## 部署
 
-合并后产物位于 **src/**（bigclaw、docker-compose、openclaw.template 等），本目录 **spec/** 为最终说明与报告（MRD、PRD、DESIGN、TEST、REVIEW）。
+- **全部部署**：`./deploy.sh all` 或 `bash scripts/deploy-from-src.sh` — 从 src 同步、写配置、重启，并自动备份与恢复 workspace。
+- **仅备份 workspace**：`./deploy.sh workspace-backup` 或 `bash scripts/workspace-backup.sh`。
+- **仅恢复 workspace**：`./deploy.sh workspace-restore` 或 `bash scripts/workspace-restore.sh`。
+
+常用环境变量：`SERVER_IP`（必填）、`SERVER_USER`（默认 root）、`OPENCLAW_WORKSPACE_PATH`、`OPENCLAW_WORKSPACE_BACKUP_PATH`（路径见 DESIGN.md）。
 
 ## 文档索引（spec）
 
 | 文档 | 说明 |
 |------|------|
 | [README.md](./README.md) | 本文件；版本与总览 |
-| [MRD.md](./MRD.md) | 需求概要与迭代 MRD 索引 |
+| [MRD.md](./MRD.md) | 需求概要 |
 | [PRD.md](./PRD.md) | 产品需求与验收 |
 | [DESIGN.md](./DESIGN.md) | 技术方案与配置 |
-| [TEST.md](./TEST.md) | 测试报告 |
-| [REVIEW.md](./REVIEW.md) | 审查报告索引 |
-
-## 部署
-
-- **全部部署**（发布版本）：`./deploy.sh all` — 从 **src/** 与 **spec/** 部署，即当前合并后的最新版本。  
-- 单迭代验证：`./deploy.sh sp0216` / `sp0217` / `sp0218` / `sp0221` — 使用 iteration 内脚本，优先读取 src/ 中已合并内容。
-
-详见项目根目录 [README.md](../README.md) 与 [deploy.sh](../deploy.sh)。
+| [TEST.md](./TEST.md) | 测试说明 |
+| [REVIEW.md](./REVIEW.md) | 审查说明 |

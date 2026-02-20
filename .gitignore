@@ -1,5 +1,9 @@
 node_modules/
 .env
 .env.*
+.env.local
 *.log
 .DS_Store
+keys/
+*.pem
+deploy.env

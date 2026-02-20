@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
  * 百度 web_search 接口实际请求测试（与 index.js 中 Baidu 分支一致）
- * 使用方式：在 openclaw-cn-private 目录下执行
+ * 使用方式：在项目根目录执行
  *   BAIDU_API_KEY=xxx node src/bigclaw/scripts/test-baidu-web-search.js
- * 或先 source private/keys/openclaw-cn-private/search.env 再执行
+ * 或先加载含 BAIDU_API_KEY 的环境（如 source keys/search.env）再执行
  */
 const url = "https://qianfan.baidubce.com/v2/ai_search/web_search";
 const payload = {

@@ -1,5 +1,5 @@
-# 正式目录配置：已合并 SP0216 + SP0217 (bigclaw) + SP0218 (飞书 + Skills)
-# 部署时由迭代脚本或根目录部署逻辑使用；服务器 .env 需含 OPENCLAW_GATEWAY_TOKEN、GAODE_API_KEY、BAIDU_API_KEY、FEISHU_* 等
+# OpenClaw 国内版部署配置
+# 部署时由 scripts/deploy-from-src.sh 使用；服务器 .env 需含 OPENCLAW_GATEWAY_TOKEN、GAODE_API_KEY、BAIDU_API_KEY、FEISHU_* 等
 services:
   openclaw-gateway:
     image: ${OPENCLAW_IMAGE:-openclaw:local}

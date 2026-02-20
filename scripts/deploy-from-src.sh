@@ -1,6 +1,5 @@
 #!/bin/bash
-# 从 src/ 部署（iteration 合并回 src+spec 后的发布版本）
-# 含 SP0222：部署前备份 workspace、部署后恢复 workspace。
+# 从 src/ 部署（发布版本）；部署前备份 workspace、部署后恢复 workspace。
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -18,15 +17,15 @@ log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
-SERVER_IP="${SERVER_IP:-175.178.157.123}"
+SERVER_IP="${SERVER_IP:?请设置 SERVER_IP（目标服务器 IP），例如: export SERVER_IP=1.2.3.4}"
 SERVER_USER="${SERVER_USER:-root}"
 OPENCLAW_WORKSPACE_PATH="${OPENCLAW_WORKSPACE_PATH:-/root/.openclaw/workspace}"
 OPENCLAW_WORKSPACE_BACKUP_PATH="${OPENCLAW_WORKSPACE_BACKUP_PATH:-/data/openclaw-deploy/workspace-backup.tar}"
 
-KEYS_DIR="$PROJECT_ROOT/../keys/openclaw-cn-private"
-if [ -f "$KEYS_DIR/feishu.env" ]; then source "$KEYS_DIR/feishu.env"; fi
-if [ -f "$KEYS_DIR/search.env" ]; then source "$KEYS_DIR/search.env"; fi
-if [ -f "$KEYS_DIR/llm.env" ]; then source "$KEYS_DIR/llm.env"; fi
+KEYS_DIR="${KEYS_DIR:-$PROJECT_ROOT/../keys/openclaw-cn}"
+if [ -n "$KEYS_DIR" ] && [ -f "$KEYS_DIR/feishu.env" ]; then source "$KEYS_DIR/feishu.env"; fi
+if [ -n "$KEYS_DIR" ] && [ -f "$KEYS_DIR/search.env" ]; then source "$KEYS_DIR/search.env"; fi
+if [ -n "$KEYS_DIR" ] && [ -f "$KEYS_DIR/llm.env" ]; then source "$KEYS_DIR/llm.env"; fi
 
 if [ ! -d "$SRC_DIR/bigclaw" ] || [ ! -f "$SRC_DIR/docker-compose.yml" ]; then
     log_error "src/ 不完整（需 bigclaw/ 与 docker-compose.yml）"

@@ -1,5 +1,5 @@
 #!/bin/bash
-# SP0222：仅从备份恢复 workspace，不备份、不部署。
+# 仅从备份恢复 workspace，不备份、不部署。
 # 若备份不存在则跳过并提示（首次部署无备份场景）。
 set -e
 
@@ -14,7 +14,7 @@ log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 
-SERVER_IP="${SERVER_IP:-175.178.157.123}"
+SERVER_IP="${SERVER_IP:?请设置 SERVER_IP（目标服务器 IP），例如: export SERVER_IP=1.2.3.4}"
 SERVER_USER="${SERVER_USER:-root}"
 WORKSPACE_PATH="${OPENCLAW_WORKSPACE_PATH:-/root/.openclaw/workspace}"
 BACKUP_PATH="${OPENCLAW_WORKSPACE_BACKUP_PATH:-/data/openclaw-deploy/workspace-backup.tar}"
