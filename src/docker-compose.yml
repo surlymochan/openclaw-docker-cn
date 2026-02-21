@@ -1,5 +1,5 @@
 # OpenClaw 国内版部署配置
-# 部署时由 scripts/deploy-from-src.sh 使用；服务器 .env 需含 OPENCLAW_GATEWAY_TOKEN、GAODE_API_KEY、BAIDU_API_KEY、FEISHU_* 等
+# 部署时由 scripts/deploy-from-src.sh 使用；服务器 .env 需含 OPENCLAW_GATEWAY_TOKEN、BAILIAN_API_KEY、GAODE_API_KEY、BAIDU_API_KEY、FEISHU_* 等
 services:
   openclaw-gateway:
     image: ${OPENCLAW_IMAGE:-openclaw:local}
@@ -10,6 +10,7 @@ services:
       OPENCLAW_GATEWAY_TRUSTED_PROXIES: "0.0.0.0/0"
       GAODE_API_KEY: ${GAODE_API_KEY:-}
       BAIDU_API_KEY: ${BAIDU_API_KEY:-}
+      BAILIAN_API_KEY: ${BAILIAN_API_KEY:-}
     volumes:
       - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
       - /data/bigclaw:/app/bigclaw

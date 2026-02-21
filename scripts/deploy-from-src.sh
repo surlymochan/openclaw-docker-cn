@@ -34,6 +34,9 @@ fi
 
 log_info "全部部署：从 src+spec 发布版本部署（含 workspace 备份与恢复）"
 log_info "目标服务器: $SERVER_IP（仅使用 $SRC_DIR）"
+if [ -z "${BAILIAN_API_KEY:-}" ]; then
+    log_warn "未设置 BAILIAN_API_KEY（需在 KEYS_DIR/llm.env 或环境中配置），部署后模型对话将不可用"
+fi
 
 echo ""
 if [ "${SKIP_WORKSPACE_BACKUP:-0}" != "1" ]; then
@@ -122,25 +125,25 @@ scp -q "$SRC_DIR/Caddyfile" "$SERVER_USER@$SERVER_IP:/data/openclaw-deploy/Caddy
 log_success "编排文件已更新"
 
 echo ""
-log_info "[4/8] 写入搜索 API Key 到服务器 .env..."
+log_info "[4/8] 写入搜索与 LLM API Key 到服务器 .env..."
 TMP_ENV=$(mktemp)
 trap "rm -f '$TMP_ENV'" EXIT
 echo "GAODE_API_KEY=${GAODE_API_KEY:-}" >> "$TMP_ENV"
 echo "BAIDU_API_KEY=${BAIDU_API_KEY:-}" >> "$TMP_ENV"
-scp -q "$TMP_ENV" "$SERVER_USER@$SERVER_IP:/tmp/search-keys.env"
-ssh "$SERVER_USER@$SERVER_IP" "cat /data/openclaw-deploy/.env 2>/dev/null | grep -v '^GAODE_API_KEY=\|^BAIDU_API_KEY=' > /data/openclaw-deploy/.env.tmp 2>/dev/null || true; cat /tmp/search-keys.env >> /data/openclaw-deploy/.env.tmp; mv /data/openclaw-deploy/.env.tmp /data/openclaw-deploy/.env; rm -f /tmp/search-keys.env"
-log_success "搜索 Key 已写入"
+echo "BAILIAN_API_KEY=${BAILIAN_API_KEY:-}" >> "$TMP_ENV"
+scp -q "$TMP_ENV" "$SERVER_USER@$SERVER_IP:/tmp/keys.env"
+ssh "$SERVER_USER@$SERVER_IP" "cat /data/openclaw-deploy/.env 2>/dev/null | grep -v '^GAODE_API_KEY=\|^BAIDU_API_KEY=\|^BAILIAN_API_KEY=' > /data/openclaw-deploy/.env.tmp 2>/dev/null || true; cat /tmp/keys.env >> /data/openclaw-deploy/.env.tmp; mv /data/openclaw-deploy/.env.tmp /data/openclaw-deploy/.env; rm -f /tmp/keys.env"
+log_success "搜索与 LLM Key 已写入"
 
 echo ""
 log_info "[5/8] 重启服务..."
 ssh "$SERVER_USER@$SERVER_IP" "cd /data/openclaw-deploy && docker compose up -d --force-recreate"
-sleep 10
+sleep 18
 
 if ssh "$SERVER_USER@$SERVER_IP" "docker ps | grep -q 'openclaw-deploy-openclaw-gateway-1.*Up'"; then
     log_success "服务已启动"
 else
-    log_error "服务启动失败"
-    exit 1
+    log_warn "gateway 尚未就绪，继续执行恢复与健康检查（若仍 502 请稍后重试或查看 gateway 日志）"
 fi
 
 echo ""

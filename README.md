@@ -33,10 +33,10 @@ export SERVER_IP=你的服务器IP
 
 ### 1. 准备密钥（可选但推荐）
 
-在**本机**建一个目录放密钥文件（如 `./keys`），并设置环境变量：
+在**本机**建一个目录放密钥文件，并通过环境变量指定（不指定时使用项目上级的 `keys/openclaw-cn`）：
 
 ```bash
-export KEYS_DIR=./keys   # 或任意路径
+export KEYS_DIR=/path/to/your/keys   # 或任意路径
 # 目录内放以下文件（至少 llm.env 才能对话）：
 #   llm.env      → BAILIAN_API_KEY=xxx     （阿里百炼，必填才能对话）
 #   feishu.env   → FEISHU_APP_ID、FEISHU_APP_SECRET 等（飞书机器人）
